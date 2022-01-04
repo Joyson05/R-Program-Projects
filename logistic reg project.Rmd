@@ -1,0 +1,145 @@
+```{r}
+df=diabetes
+head(df)
+```
+```{r}
+df=subset(df,select=-SkinThickness)
+```
+
+
+```{r}
+str(df)
+```
+
+
+```{r}
+dim(df)
+```
+
+
+```{r}
+colSums(is.na(df))
+```
+```{r}
+library(corrplot)
+my_corr=cor(df)
+corrplot(my_corr)
+```
+
+
+```{r}
+boxplot(df)
+```
+
+```{r}
+library(psych)
+library(ggplot2)
+```
+
+
+```{r}
+describe(df)
+```
+```{r}
+ggplot(df,aes(Outcome,col=as.factor(Outcome),fill=Outcome))+geom_bar()+ggtitle("bargraph")
+```
+```{r}
+plot(df)
+```
+
+```{r}
+hist(df$Outcome)
+```
+```{r}
+library(GGally)
+ggpairs(df)
+```
+```{r}
+d <- density(df[, "Insulin"]) # returns the density data
+plot(d)
+```
+```{r}
+library(dplyr)
+den_col = names(select(df, -Outcome))
+
+par(mfrow=c(3,3))
+for (col in den_col) {
+  plot(density(df[, col]), main = paste(col))
+}
+```
+```{r}
+print(paste("A", 7))
+```
+
+
+```{r}
+set.seed(100)
+library(caTools)
+split=sample.split(df,SplitRatio = 0.8)
+Train=subset(df,split=="TRUE")
+Test=subset(df,split=="FALSE")
+```
+
+
+```{r}
+model=glm(Outcome~.,data=Train,family="binomial")
+summary(model)
+```
+
+```{r}
+y_pred=predict(model,Test,type = "response")
+y_pred
+```
+
+
+```{r}
+table(Actual=Test$Outcome,Predicted=y_pred>0.5)
+```
+```{r}
+table(df$Outcome)
+```
+
+
+```{r}
+library(ROCR)
+ROCR_pred=prediction(y_pred,Test$Outcome)
+performance_ROC=performance(ROCR_pred,'tpr','fpr')
+plot(performance_ROC,colorize=TRUE)
+```
+```{r}
+library(caret)
+confusionMatrix(Test$Outcome, y_pred>0.8)
+
+```
+
+
+
+
+```{r}
+optimum=optimalCutoff(Test$Outcome, y_pred)[1]
+optimum
+```
+```{r}
+library(Metrics)
+accuracy(Test$Outcome, y_pred>0.42)
+```
+```{r}
+confusionMatrix(Test$Outcome, y_pred>0.42)
+```
+
+```{r}
+Metrics::precision(Test$Outcome, y_pred>0.42)
+```
+```{r}
+misClassError(Test$Outcome,y_pred, threshold=optimum)
+```
+
+
+```{r}
+
+#The total misclassification error rate is 22% for this model
+```
+
+
+
+

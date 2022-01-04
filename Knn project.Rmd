@@ -1,0 +1,219 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+df=adult
+```
+
+
+```{r}
+str(df)
+dim(df)
+```
+```{r}
+sum(is.na(df))
+#cumsum(is.na(df))
+```
+```{r}
+#install.packages("DataExplorer")
+library("DataExplorer")
+plot_intro(df)
+```
+
+
+```{r}
+unique(df$income)
+```
+
+
+```{r}
+library(dplyr)
+num_var=select(df,is.numeric)
+num_var
+str(num_var)
+dim(num_var)
+```
+
+
+```{r}
+count(df,capital.gain)
+count(df,capital.loss)
+```
+
+
+```{r}
+library(psych)
+describe(num_var)
+```
+
+
+```{r}
+count(df,education)
+```
+
+
+```{r}
+median(df$capital.gain)
+mean(df$capital.gain)
+```
+
+
+```{r}
+plot(density(df$capital.loss))
+```
+```{r}
+plot(density(df$capital.gain))
+```
+
+
+```{r}
+plot(density(num_var$age))
+```
+
+
+```{r}
+plot(density(df$fnlwgt))
+```
+
+
+```{r}
+#plot(num_var)
+```
+
+
+```{r}
+boxplot(num_var)
+```
+```{r}
+DataExplorer::plot_boxplot(df,by="income")
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(num_var) +
+  aes(x = "", y = fnlwgt) +
+  geom_boxplot(fill = "#0c4c8a") +
+  theme_minimal()
+```
+
+```{r}
+lower_bound <- quantile(num_var$fnlwgt, 0.25)
+lower_bound
+upper_bound <- quantile(num_var$fnlwgt, 0.75)
+upper_bound
+outlier_fnlwgt <- which(num_var$fnlwgt < lower_bound | num_var$fnlwgt > upper_bound)
+length(outlier_fnlwgt)
+```
+
+```{r}
+library(corrplot)
+my_corr=cor(num_var)
+corrplot(my_corr)
+```
+
+
+```{r}
+print(my_corr)
+```
+```{r}
+library(caret)
+highlyCorrelated = findCorrelation(my_corr, cutoff=0.5)
+highlyCorrelated
+```
+
+
+```{r}
+#data explorer library
+plot_bar(df)
+```
+
+```{r}
+#scaling only integer columns
+for(col in names(df)){
+  if(class(df[,col]) == 'integer'){
+    df[,col]=scale(df[,col],center = TRUE)
+  }
+  
+}
+
+
+```
+
+
+```{r}
+select(df,is.numeric)
+```
+
+
+```{r}
+char_var=select(df,is.character)
+char_var
+```
+
+
+```{r}
+#label encoding only integer columns
+library(superml)
+le=LabelEncoder$new()
+for(col in names(char_var)){
+  df[,col]=le$fit_transform(df[,col])
+}
+```
+
+```{r}
+str(df)
+```
+```{r}
+df
+```
+
+
+```{r}
+#for(col in names(num_var)){
+  #df[,col]=scale(df[,col],center = TRUE)
+#}
+
+```
+
+```{r}
+#feature selection
+#library("randomForest")
+#control <- rfeControl(functions=rfFuncs, method="cv", number=10)
+#result_rfe=rfe(Train[,1:14],Train[,15],sizes=c(1:14),rfeControl = control)
+```
+
+
+```{r}
+library(caTools)
+split=sample.split(df,SplitRatio = 0.8)
+split
+Train=subset(df,split=="TRUE")
+Test=subset(df,split=="FALSE")
+y_train=Train$income
+y_test=Test$income
+```
+
+
+```{r}
+library(class)
+model=knn(Train,Test,y_train,k=221)
+table(model,y_test)
+```
+
+
+```{r}
+library(Metrics)
+accuracy(model,y_test)
+```
+```{r}
+recall(model,y_test)
+
+```
+```{r}
+precision(model,y_test)
+```
+
+

@@ -1,0 +1,175 @@
+---
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+```{r}
+str(data)
+```
+
+
+```{r}
+dim(data)
+```
+
+
+```{r}
+#removing the unique variables and the variables which has picture.
+df=subset(data,select=-c(ï..,ID,Club.Logo,Photo,Flag,Name))
+head(df,10)
+```
+
+
+```{r}
+dim(df)
+```
+
+
+```{r}
+list = c("Messi", "C. Ronaldo", "Neymar", "Shaqiri", "Courtois", "Akinfenwa","PLAYER_BODY_TYPE_25")
+```
+
+
+```{r}
+replace <- function(x) {
+  if (x %in% list) {
+    "Normal"
+  } else {
+    x
+  }
+}
+df$Body.Type = sapply(df$Body.Type, replace)
+```
+
+
+```{r}
+library(stringr)
+replace_lbs <- function(x) {as.integer(str_sub(x, 1, 3))}
+df$Weight = sapply(df$Weight, replace_lbs)
+```
+
+
+```{r}
+#a = "153lbs"
+#library(stringr)
+#str_sub(a, 1, 3)
+```
+
+
+```{r}
+#df$Weight = as.integer(df$Weight)
+```
+
+
+```{r}
+str(df$Weight)
+```
+
+
+```{r}
+View(df)
+```
+
+
+```{r}
+str(df)
+```
+
+
+```{r}
+#colSums(is.na(df))
+sum(is.na(df))
+```
+```{r}
+df= df[complete.cases(df), ]
+df
+```
+```{r}
+library(dplyr)
+char_col=names(select(df, is.character))
+char_col
+```
+
+```{r}
+dim(df)
+```
+
+
+```{r}
+#library(superml)
+le=LabelEncoder$new()
+for(col in char_col){
+  print(col)
+  df[,col]=le$fit_transform(df[,col])
+}
+```
+
+```{r}
+str(df)
+```
+
+
+```{r}
+library(cluster)#to do cluster
+library(factoextra)#for the cluster graph
+library(ggplot2)
+```
+
+
+```{r}
+k_means3=kmeans(df,centers = 3)
+k_means4=kmeans(df,centers = 4)
+```
+
+
+```{r}
+p1=fviz_cluster(k_means3,geom="points",data=df)+ggtitle("k=3")
+p2=fviz_cluster(k_means4,geom="points",data=df)+ggtitle("k=4")
+p1
+```
+
+
+```{r}
+p2
+```
+
+
+```{r}
+#elbow method
+elbow=function(k){
+  kmeans(df,k)$tot.withinss
+}
+```
+```{r}
+library(purrr)
+```
+```{r}
+k.values=c(1:15)
+elbow_value=map_dbl(k.values,elbow)
+plot(k.values,elbow_value,type="b",xlab="Number of clusters")
+plot(k.values,elbow_value,type="b")
+```
+
+
+```{r}
+#silhoutte score
+fviz_nbclust(df,kmeans,method="silhouettet")
+```
+
+
+```{r}
+k_means3=kmeans(df,centers = 3)
+df["final_pred"]=k_means3$cluster
+df
+count(df, final_pred)
+```
+```{r}
+library(knitr)
+library(rmarkdown)
+```
+
+
+```{r}
+```
+

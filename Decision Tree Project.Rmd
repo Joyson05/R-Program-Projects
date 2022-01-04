@@ -1,0 +1,117 @@
+```{r}
+df=mushrooms
+```
+
+```{r}
+df
+```
+
+
+```{r}
+str(df)
+dim(df)
+```
+
+
+```{r}
+sum(is.na(df))
+```
+
+
+```{r}
+library(DataExplorer)
+plot_intro(df)
+```
+
+
+```{r}
+plot_bar(df,by="class",title="count of e and p class in all variables")
+```
+
+
+```{r}
+plot_bar(df,title="count")
+```
+
+
+```{r}
+library(superml)
+le=LabelEncoder$new()
+for (col in names(df)){
+  df[,col]=le$fit_transform(df[,col])
+}
+```
+
+
+```{r}
+df
+```
+```{r}
+library(psych)
+describe(df)
+```
+
+
+
+```{r}
+library(corrplot)
+my_corr=cor(df)
+corrplot(my_corr)
+```
+
+```{r}
+
+table(df$veil.type)
+```
+
+```{r}
+library(dplyr)
+k=select(df,-veil.type)
+mycor=cor(k)
+```
+
+```{r}
+#library(caret)
+highlyCorrelated = findCorrelation(mycor, cutoff=0.5,names = TRUE)
+highlyCorrelated
+```
+```{r}
+library(caTools)
+split=sample.split(df,SplitRatio = 0.8)
+split
+Train=subset(df,split=="TRUE")
+Test=subset(df,split=="FALSE")
+```
+
+
+```{r}
+library(party)
+model1<- ctree(class ~., Train)
+plot(model1)
+```
+```{r}
+predict_model<-predict(model1, Test)
+head(predict_model,15)
+```
+
+
+```{r}
+table(Test$class, predict_model)
+```
+
+
+```{r}
+library(Metrics)
+accuracy(Test$class, predict_model)
+```
+```{r}
+recall(Test$class, predict_model)
+```
+
+
+```{r}
+precision(Test$class, predict_model)
+```
+
+
+

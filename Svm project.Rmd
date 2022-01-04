@@ -1,0 +1,123 @@
+```{r}
+df=bank_additional_full
+```
+
+
+```{r}
+library(DataExplorer)
+plot_intro(df)
+```
+
+
+```{r}
+str(df)
+dim(df)
+```
+```{r}
+library(psych)
+describe(df)
+```
+
+```{r}
+library(dplyr)
+char_col=select(df,is.character)
+str(char_col)
+```
+
+
+```{r}
+library(DataExplorer)
+plot_bar(char_col)
+```
+
+
+```{r}
+plot_bar(char_col,by="y")
+```
+```{r}
+num_var=select(df,is.numeric)
+str(num_var)
+```
+
+
+
+```{r}
+boxplot(select(df,is.numeric))
+```
+
+
+```{r}
+plot_density(df)
+```
+```{r}
+library(ggplot2)
+ggplot(num_var) +
+  aes(x = cons.price.idx) +
+  geom_density(adjust = 1L, fill = "#EF562D") +
+  theme_minimal()
+```
+
+
+```{r}
+library(corrplot)
+my_corr=cor(select(df,is.numeric))
+corrplot(my_corr)
+```
+```{r}
+library(caTools)
+set.seed(100)
+split=sample.split(df,SplitRatio = 0.8)
+Train=subset(df,split=="TRUE")
+Test=subset(df,split=="FALSE")
+```
+
+
+```{r}
+library(superml)
+le=LabelEncoder$new()
+for (col in names(char_col)){
+  df[,col]=le$fit_transform(df[,col])
+}
+```
+```{r}
+str(df)
+```
+
+
+```{r}
+library(e1071)
+svm_model=svm(as.factor(y)~.,data=Train,kernel="linear")
+summary(svm_model)
+```
+
+
+```{r}
+library(Metrics)
+kernel = c("linear", "radial", "sigmoid", "polynomial" )
+for (k in kernel){
+  print(paste("Kernel:", k))
+  svm_model = svm(as.factor(y)~., data = Train, kernel = k)
+  pred = predict(svm_model,Test)
+  print(paste("Accuracy Score:", accuracy(Test$y, pred)))
+}
+```
+
+
+```{r}
+model=svm(as.factor(y)~.,data=Train,kernel="radial")
+```
+
+
+```{r}
+pred1 = predict(model,Test)
+head(pred1,5)
+```
+
+
+```{r}
+library(caret)
+library(InformationValue)
+confusionMatrix(Test$y,pred1)
+table(Test$y,pred1)
+```
+
